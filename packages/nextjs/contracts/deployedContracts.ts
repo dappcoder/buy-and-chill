@@ -7,7 +7,7 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   31337: {
     YourContract: {
-      address: "0x700b6A60ce7EaaEA56F065753d8dcB9653dbAD35",
+      address: "0xb19b36b1456E65E3A6D514D3F715f204BD59f431",
       abi: [
         {
           type: "constructor",
@@ -26,6 +26,130 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "buyToken",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "daiAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "payable",
+        },
+        {
+          type: "function",
+          name: "getDaiBalance",
+          inputs: [
+            {
+              name: "user",
+              type: "address",
+              internalType: "address",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getHistoricalPrices",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256[]",
+              internalType: "uint256[]",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getPerformanceData",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "int256[]",
+              internalType: "int256[]",
+            },
+          ],
+          stateMutability: "pure",
+        },
+        {
+          type: "function",
+          name: "getTokenBalance",
+          inputs: [
+            {
+              name: "user",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "getTokenPrice",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "greeting",
           inputs: [],
           outputs: [
@@ -33,6 +157,49 @@ const deployedContracts = {
               name: "",
               type: "string",
               internalType: "string",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "historicalPrices",
+          inputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "maValues",
+          inputs: [
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
             },
           ],
           stateMutability: "view",
@@ -65,6 +232,30 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "sellToken",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "tokenAmount",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "bool",
+              internalType: "bool",
+            },
+          ],
+          stateMutability: "nonpayable",
+        },
+        {
+          type: "function",
           name: "setGreeting",
           inputs: [
             {
@@ -78,6 +269,30 @@ const deployedContracts = {
         },
         {
           type: "function",
+          name: "tokenBalances",
+          inputs: [
+            {
+              name: "",
+              type: "address",
+              internalType: "address",
+            },
+            {
+              name: "",
+              type: "string",
+              internalType: "string",
+            },
+          ],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
           name: "totalCounter",
           inputs: [],
           outputs: [
@@ -88,6 +303,24 @@ const deployedContracts = {
             },
           ],
           stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "updateMAValue",
+          inputs: [
+            {
+              name: "instrument",
+              type: "string",
+              internalType: "string",
+            },
+            {
+              name: "newValue",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          outputs: [],
+          stateMutability: "nonpayable",
         },
         {
           type: "function",
@@ -148,7 +381,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1748407581.json",
+      deploymentFile: "run-1748440895.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
