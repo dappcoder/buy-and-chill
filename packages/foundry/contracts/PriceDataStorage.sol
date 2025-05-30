@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 
@@ -38,7 +38,7 @@ contract PriceDataStorage is Ownable {
         _;
     }
     
-    constructor() {}
+    constructor() Ownable(msg.sender) {}
     
     /**
      * @dev Add a new price point for an instrument
@@ -108,20 +108,24 @@ contract PriceDataStorage is Ownable {
         }
         
         uint256 totalPoints = points.length;
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        
+        // Only calculate MA when we have exactly enough points
+        if (totalPoints < maLength) {
+            // We don't have enough data points yet
+            maValues[instrument] = 0;
+            return;
+        }
+        
         uint256 sum = 0;
         
-        // For ETH_USD_2000_DMA, use all points up to 2000
-        // For BTC_USD_200_WMA, use all points up to 200
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
-        uint256 pointsToUse = totalPoints < maLength ? totalPoints : maLength;
-        
         // Start from the most recent points
-        for (uint256 i = 0; i < pointsToUse; i++) {
+        for (uint256 i = 0; i < maLength; i++) {
             sum += points[totalPoints - 1 - i];
         }
         
         // Calculate the average
-        uint256 newMA = sum / pointsToUse;
+        uint256 newMA = sum / maLength;
         maValues[instrument] = newMA;
         
         emit MAUpdated(instrument, newMA);
@@ -130,9 +134,16 @@ contract PriceDataStorage is Ownable {
     /**
      * @dev Get the current MA value for an instrument
      * @param instrument The instrument to get MA for
-     * @return The MA value with 8 decimals
+     * @return The MA value with 8 decimals, or 0 if not enough data points
      */
     function getMA(Instrument instrument) external view returns (uint256) {
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        
+        // Check if we have enough data points for a valid MA
+        if (priceData[instrument].length < maLength) {
+            return 0; // Not enough data for MA calculation
+        }
+        
         return maValues[instrument];
     }
     
@@ -187,6 +198,16 @@ contract PriceDataStorage is Ownable {
      */
     function getPriceCount(Instrument instrument) external view returns (uint256) {
         return priceData[instrument].length;
+    }
+    
+    /**
+     * @dev Check if we have enough data points for a valid MA calculation
+     * @param instrument The instrument to check
+     * @return True if we have enough data points for MA calculation
+     */
+    function hasValidMA(Instrument instrument) external view returns (bool) {
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        return priceData[instrument].length >= maLength;
     }
     
     /**

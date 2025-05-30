@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
-import {Script, console} from "forge-std/Script.sol";
+import {Script} from "forge-std/Script.sol";
+import "forge-std/console2.sol";
 import {PriceDataStorage} from "../contracts/PriceDataStorage.sol";
 
 contract InitializePriceData is Script {
@@ -22,15 +23,21 @@ contract InitializePriceData is Script {
         PriceDataStorage priceDataStorage = PriceDataStorage(storageAddress);
         
         // Parse ETH/USD data
-        bytes memory ethData = vm.parseJson(json, ".ETH_USD_2000_DMA");
-        (uint256[] memory ethTimestamps, uint256[] memory ethPrices) = abi.decode(ethData, (uint256[], uint256[]));
+        bytes memory ethTimestampsData = vm.parseJson(json, ".ETH_USD_2000_DMA.timestamps");
+        bytes memory ethPricesData = vm.parseJson(json, ".ETH_USD_2000_DMA.prices");
+        uint256[] memory ethTimestamps = abi.decode(ethTimestampsData, (uint256[]));
+        uint256[] memory ethPrices = abi.decode(ethPricesData, (uint256[]));
         
         // Parse BTC/USD data
-        bytes memory btcData = vm.parseJson(json, ".BTC_USD_200_WMA");
-        (uint256[] memory btcTimestamps, uint256[] memory btcPrices) = abi.decode(btcData, (uint256[], uint256[]));
+        bytes memory btcTimestampsData = vm.parseJson(json, ".BTC_USD_200_WMA.timestamps");
+        bytes memory btcPricesData = vm.parseJson(json, ".BTC_USD_200_WMA.prices");
+        uint256[] memory btcTimestamps = abi.decode(btcTimestampsData, (uint256[]));
+        uint256[] memory btcPrices = abi.decode(btcPricesData, (uint256[]));
         
-        console.log("Loaded ETH/USD data points:", ethTimestamps.length);
-        console.log("Loaded BTC/USD data points:", btcTimestamps.length);
+        console2.log("Loaded ETH/USD data points:");
+        console2.log(ethTimestamps.length);
+        console2.log("Loaded BTC/USD data points:");
+        console2.log(btcTimestamps.length);
         
         // Start transaction
         vm.startBroadcast(deployerPrivateKey);
@@ -53,7 +60,7 @@ contract InitializePriceData is Script {
         
         vm.stopBroadcast();
         
-        console.log("Price data initialization complete!");
+        console2.log("Price data initialization complete!");
     }
     
     function initializeInBatches(
@@ -87,13 +94,16 @@ contract InitializePriceData is Script {
             // Initialize this batch
             priceDataStorage.initializePrices(instrument, batchTimestamps, batchPrices);
             
-            console.log(
-                "Initialized batch %d/%d for instrument %s with %d points",
-                i + 1,
-                batchCount,
-                instrument == PriceDataStorage.Instrument.ETH_USD_2000_DMA ? "ETH/USD" : "BTC/USD",
-                batchSize
-            );
+            // Log batch initialization (simplified for compatibility)
+            console2.log("Initialized batch");
+            console2.log(i + 1);
+            console2.log("of");
+            console2.log(batchCount);
+            console2.log("for");
+            console2.log(instrument == PriceDataStorage.Instrument.ETH_USD_2000_DMA ? "ETH/USD" : "BTC/USD");
+            console2.log("with");
+            console2.log(batchSize);
+            console2.log("points");
         }
     }
 }

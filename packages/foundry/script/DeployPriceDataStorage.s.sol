@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 import {Script} from "forge-std/Script.sol";
+import "forge-std/console2.sol";
 import {PriceDataStorage} from "../contracts/PriceDataStorage.sol";
 
 contract DeployPriceDataStorage is Script {
@@ -19,7 +20,7 @@ contract DeployPriceDataStorage is Script {
         vm.stopBroadcast();
         
         // Log the contract address
-        console.log("PriceDataStorage deployed at:", address(priceDataStorage));
+        console2.log("PriceDataStorage deployed at:", address(priceDataStorage));
         
         return priceDataStorage;
     }
