@@ -11,9 +11,11 @@ import { notification } from "~~/utils/scaffold-eth";
 const Home: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
   const [selectedInstrument, setSelectedInstrument] = useState<string>("ETH/USD 2000 DMA");
+  const [showDemoControls, setShowDemoControls] = useState<boolean>(false);
+  const [newMAValue, setNewMAValue] = useState<string>("");
 
   // Read token price from contract
-  const { data: tokenPrice } = useScaffoldReadContract({
+  const { data: tokenPrice, refetch: refetchTokenPrice } = useScaffoldReadContract({
     contractName: "YourContract",
     functionName: "getTokenPrice",
     args: [selectedInstrument],
@@ -32,6 +34,9 @@ const Home: NextPage = () => {
     functionName: "getHistoricalPrices",
     args: [selectedInstrument],
   });
+  
+  // Write contract hook for updating MA values
+  const { writeContractAsync: updateMAValueAsync } = useScaffoldWriteContract("YourContract");
 
   // Format price for display
   const formattedPrice = tokenPrice ? `$${(Number(tokenPrice) / 10**18).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "$0.00";
@@ -42,6 +47,27 @@ const Home: NextPage = () => {
     // Value is in basis points (100 = 1%)
     const percentage = value / 100;
     return `+${percentage.toFixed(2)}%`;
+  };
+  
+  // Handle updating MA value for demo purposes
+  const handleUpdateMAValue = async () => {
+    if (!newMAValue) return;
+    
+    try {
+      const valueInWei = BigInt(Math.floor(parseFloat(newMAValue) * 10**18));
+      
+      await updateMAValueAsync({
+        functionName: 'updateMAValue',
+        args: [selectedInstrument, valueInWei],
+      });
+      
+      notification.success(`Updated ${selectedInstrument} value to $${newMAValue}`);
+      setNewMAValue("");
+      refetchTokenPrice();
+    } catch (error) {
+      console.error('Failed to update MA value:', error);
+      notification.error('Failed to update MA value');
+    }
   };
 
   return (
@@ -172,11 +198,53 @@ const Home: NextPage = () => {
               </div>
             </div>
           ) : (
-            <TradingInterface 
-              connectedAddress={connectedAddress as `0x${string}`} 
-              selectedInstrument={selectedInstrument}
-              tokenPrice={tokenPrice}
-            />
+            <>
+              <TradingInterface 
+                connectedAddress={connectedAddress as `0x${string}`} 
+                selectedInstrument={selectedInstrument}
+                tokenPrice={tokenPrice}
+              />
+              
+              {/* Demo Controls for Hackathon - Hidden by default */}
+              <div className="mt-6">
+                <button 
+                  className="btn btn-sm btn-ghost" 
+                  onClick={() => setShowDemoControls(!showDemoControls)}
+                >
+                  {showDemoControls ? "Hide Demo Controls" : "Show Demo Controls"}
+                </button>
+                
+                {showDemoControls && (
+                  <div className="card bg-base-300 shadow-xl mt-2">
+                    <div className="card-body">
+                      <h3 className="card-title text-sm">Demo Controls (For Hackathon Only)</h3>
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Update {selectedInstrument} Price ($)</span>
+                        </label>
+                        <div className="join">
+                          <input 
+                            type="text" 
+                            className="input input-bordered join-item w-full" 
+                            placeholder="Enter new price" 
+                            value={newMAValue}
+                            onChange={(e) => setNewMAValue(e.target.value)}
+                          />
+                          <button 
+                            className="btn join-item" 
+                            onClick={handleUpdateMAValue}
+                            disabled={!newMAValue}
+                          >
+                            Update
+                          </button>
+                        </div>
+                        <p className="text-xs mt-1 opacity-70">Use this to simulate price changes during the demo</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </>
           )}
         </div>
       </div>

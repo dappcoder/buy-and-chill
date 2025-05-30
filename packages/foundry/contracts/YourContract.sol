@@ -23,6 +23,9 @@ contract YourContract {
     // Buy and Chill SMA Token Variables
     mapping(address => mapping(string => uint256)) public tokenBalances;
     mapping(string => uint256[]) public historicalPrices;
+    
+    // Hardcoded Moving Average values (scaled by 10^18)
+    mapping(string => uint256) public maValues;
 
     // Events: a way to emit log statements from smart contract that can be listened to by external parties
     event GreetingChange(address indexed greetingSetter, string newGreeting, bool premium, uint256 value);
@@ -31,6 +34,10 @@ contract YourContract {
     // Check packages/foundry/deploy/Deploy.s.sol
     constructor(address _owner) {
         owner = _owner;
+        
+        // Initialize hardcoded MA values
+        maValues["ETH/USD 2000 DMA"] = 1993 * 10**18;  // $1993
+        maValues["BTC/USD 200 WMA"] = 34321 * 10**18; // $34,321
     }
 
     // Modifier: used to define a set of rules that must be met before or after a function is executed
@@ -88,13 +95,9 @@ contract YourContract {
      * @param instrument The name of the instrument ("ETH/USD 2000 DMA" or "BTC/USD 200 WMA")
      * @return The current price in USD (scaled by 10^18)
      */
-    function getTokenPrice(string memory instrument) public pure returns (uint256) {
-        // Return dummy prices based on instrument name
-        if (keccak256(bytes(instrument)) == keccak256(bytes("ETH/USD 2000 DMA"))) {
-            return 1993 * 10**18;  // $1993
-        } else {
-            return 34321 * 10**18; // $34,321
-        }
+    function getTokenPrice(string memory instrument) public view returns (uint256) {
+        // Return price from our hardcoded values
+        return maValues[instrument];
     }
 
     /**
@@ -215,5 +218,21 @@ contract YourContract {
         console.logUint(tokenAmount);
         
         return true;
+    }
+    
+    /**
+     * Update the MA value for an instrument (for demo purposes)
+     * @param instrument The name of the instrument
+     * @param newValue The new MA value (scaled by 10^18)
+     */
+    function updateMAValue(string memory instrument, uint256 newValue) public {
+        // In a real implementation, this would be restricted to authorized updaters or oracles
+        // For the hackathon demo, we'll allow anyone to update the values
+        maValues[instrument] = newValue;
+        
+        // Log the update for debugging
+        console.logString("Updated MA value");
+        console.logString(instrument);
+        console.logUint(newValue);
     }
 }
