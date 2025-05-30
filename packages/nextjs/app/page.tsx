@@ -7,6 +7,7 @@ import { ChartBarIcon, CurrencyDollarIcon, ArrowTrendingUpIcon } from "@heroicon
 import { Address, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import { useScaffoldReadContract, useScaffoldWriteContract } from "~~/hooks/scaffold-eth";
 import { notification } from "~~/utils/scaffold-eth";
+import TradingViewChart from "~~/components/buy-and-chill/TradingViewChart";
 
 const Home: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
@@ -104,47 +105,19 @@ const Home: NextPage = () => {
             </div>
           </div>
 
-          {/* Simple Chart Visualization */}
+          {/* TradingView Chart */}
           <div className="card bg-base-100 shadow-xl mb-6">
             <div className="card-body">
               <h2 className="card-title flex items-center gap-2">
                 <ChartBarIcon className="h-6 w-6" />
-                Historical Performance
+                Historical Performance with Moving Average
               </h2>
-              <div className="bg-base-200 rounded-lg h-64 p-4">
-                {historicalPrices && historicalPrices.length > 0 ? (
-                  <div className="w-full h-full flex items-end">
-                    {historicalPrices.map((price, index) => {
-                      // Calculate height percentage based on min/max prices
-                      const prices = historicalPrices.map(p => Number(p));
-                      const minPrice = Math.min(...prices);
-                      const maxPrice = Math.max(...prices);
-                      const range = maxPrice - minPrice;
-                      const heightPercentage = ((Number(price) - minPrice) / range) * 80 + 10; // 10-90% height
-                      
-                      return (
-                        <div key={index} className="flex-1 flex flex-col items-center">
-                          <div 
-                            className="w-full bg-primary rounded-t-sm" 
-                            style={{ height: `${heightPercentage}%` }}
-                            title={`$${(Number(price) / 10**18).toFixed(2)}`}
-                          />
-                          {index % 5 === 0 && (
-                            <span className="text-xs mt-1">{index + 1}</span>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <p className="text-base-content/60">Loading chart data...</p>
-                  </div>
-                )}
+              <div className="bg-base-200 rounded-lg overflow-hidden">
+                <TradingViewChart instrument={selectedInstrument} height={400} />
               </div>
               <div className="flex justify-between text-xs text-base-content/70 mt-2">
-                <span>3 Years Ago</span>
-                <span>Present</span>
+                <span className="italic">Chart shows {selectedInstrument === "ETH/USD 2000 DMA" ? "2000-day" : "200-week"} moving average</span>
+                <span>Source: TradingView</span>
               </div>
             </div>
           </div>
