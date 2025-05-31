@@ -42,6 +42,14 @@ yarn start
 
 Create `packages/foundry/.env`:
 ```
+# DEFAULT SCAFFOLD-ETH KEYS
+# Alchemy rpc URL is used while deploying the contracts to some testnets/mainnets, checkout `foundry.toml` for it's use.
+ALCHEMY_API_KEY=oKxs-03sij-U_N0iOlrSsZFr29-IqbuF
+# Etherscan API key is used to verify the contract on etherscan.
+ETHERSCAN_API_KEY=DNXJA8RX2Q3VZ4URQIWP7Z68CJXQZSC6AW
+# Default account for localhost / use "scaffold-eth-custom" if you wish to use a generated account or imported account
+ETH_KEYSTORE_ACCOUNT=scaffold-eth-default
+
 PRIVATE_KEY=your_private_key_here
 ETHERSCAN_API_KEY=your_etherscan_api_key_here
 DATA_PATH=./data/historical_prices.json
