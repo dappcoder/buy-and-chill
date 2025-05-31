@@ -117,6 +117,7 @@ Let's walk through a practical example for BTC/USD 200 WMA:
 This strategy creates a natural "buy low, sell high" mechanism that maintains the moving average tracking while reducing volatility and drawdowns compared to holding pure crypto.
 
 ### Frontend components
+The majority of the frontend code is implemented in @packages/nextjs/app/page.tsx and  @packages/nextjs/components/buy-and-chill/TradingViewChart.tsx
 One page react app that has two screens (wallet not connected and connected).
 
 Components when the wallet is NOT connected:
