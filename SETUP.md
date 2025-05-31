@@ -1,0 +1,133 @@
+# Buy and Chill dApp Setup Guide
+
+## Prerequisites
+
+- Node.js v22.16.0
+- Yarn
+- Foundry
+- Git
+- Wallet with testnet ETH
+
+## Quick Setup
+
+```bash
+# Clone repository
+git clone https://github.com/dappcoder/buy-and-chill.git
+cd buy-and-chill
+
+# Install dependencies
+yarn install
+
+# Build contracts
+cd packages/foundry
+forge build
+
+# Run tests
+forge test
+```
+
+## Local Development
+
+```bash
+# Terminal 1: Start local blockchain
+yarn chain
+
+# Terminal 2: Start frontend
+yarn start
+```
+
+## Deployment
+
+### Environment Setup
+
+Create `packages/foundry/.env`:
+```
+PRIVATE_KEY=your_private_key_here
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
+DATA_PATH=./data/historical_prices.json
+```
+
+### Deploy All Contracts
+
+```bash
+cd packages/foundry
+forge script script/Init.s.sol --rpc-url localhost --broadcast
+```
+
+### Update Frontend with Contract Addresses
+
+After deploying contracts with Forge scripts, the contract addresses are stored in the `broadcast` directory. To update the frontend's contract addresses:
+
+```bash
+cd packages/foundry
+node scripts-js/generateTsAbis.js
+```
+
+This script reads the deployment information from the `broadcast` directory and generates the `deployedContracts.ts` file in the `packages/nextjs/contracts` directory, which the frontend uses to interact with the deployed contracts.
+
+## Verification
+
+```bash
+# Verify deployments
+forge script script/VerifyAll.s.sol --rpc-url localhost
+
+# Check vault setup
+forge script script/CheckVaultSetup.s.sol --rpc-url localhost
+```
+
+## Testing
+
+```bash
+# All tests
+forge test
+
+# Integration tests only
+forge test --match-test "testIntegration"
+
+# Mock tests only
+forge test --match-test "testMock"
+```
+
+## Troubleshooting
+
+### Frontend Contract Name Mismatch
+
+If you encounter errors like `TypeError: Cannot read properties of undefined (reading 'address')`, it's likely due to a mismatch between contract names in the frontend code and the `deployedContracts.ts` file.
+
+For example, the frontend might be looking for `MockDAI` but the contract is registered as `MockERC20` in the deployedContracts.ts file.
+
+To fix this, either:
+
+1. Update the frontend code to use the correct contract name:
+
+```typescript
+// Change this line in app/page.tsx
+address: deployedContracts[31337].MockDAI.address as `0x${string}`,
+
+// To this:
+address: deployedContracts[31337].MockERC20.address as `0x${string}`,
+```
+
+2. Or modify the contract name in the deployment script to match what the frontend expects.
+
+## Historical Price Data
+
+```bash
+# Fetch historical price data
+node scripts/FetchPythHistoricalData.js
+
+# Initialize with historical data
+forge script script/InitializePriceData.s.sol --rpc-url localhost --broadcast
+```
+
+## Testnet Deployment
+
+```bash
+forge script script/Init.s.sol --rpc-url https://sepolia.infura.io/v3/YOUR_INFURA_KEY --broadcast --verify
+```
+
+## Debugging
+
+```bash
+forge script script/Init.s.sol -vvvv --rpc-url localhost
+```
