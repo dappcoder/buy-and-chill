@@ -53,6 +53,7 @@ const PriceDataView = ({
   const [totalPoints, setTotalPoints] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [maValue, setMaValue] = useState<string>("0");
+  const [error, setError] = useState<string | null>(null);
   
   // Items per page
   const PAGE_SIZE = 20;
@@ -63,7 +64,7 @@ const PriceDataView = ({
   ];
   
   // Get total number of price points
-  const { data: countData, refetch: refetchCount } = useContractRead({
+  const { data: countData, refetch: refetchCount, isError: isCountError, error: countError } = useContractRead({
     address: priceDataStorageAddress,
     abi: PRICE_DATA_ABI,
     functionName: "getPriceCount",
@@ -107,6 +108,7 @@ const PriceDataView = ({
         })).reverse(); // Reverse to show newest first
         
         setPricePoints(formattedData);
+        setError(null); // Clear any previous errors
       } else {
         setPricePoints([]);
       }
@@ -114,6 +116,23 @@ const PriceDataView = ({
       setLoading(false);
     }
   }, [rangeData]);
+  
+  // Make sure loading state is updated when countData is available, even if it's zero
+  useEffect(() => {
+    // If we've gotten a response (even zero), stop the loading state
+    if (countData !== undefined) {
+      setLoading(false);
+    }
+  }, [countData]);
+  
+  // Handle errors from contract read operations
+  useEffect(() => {
+    if (isCountError && countError) {
+      console.error("Error reading price count:", countError);
+      setError("Failed to connect to the contract. Please verify the contract address and network connection.");
+      setLoading(false);
+    }
+  }, [isCountError, countError]);
   
   // Update total points when count data changes
   useEffect(() => {
@@ -196,38 +215,55 @@ const PriceDataView = ({
         </div>
       </div>
       
-      <div className="overflow-x-auto">
-        <table className="table w-full">
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Price (USD)</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
+      {error ? (
+        <div className="alert alert-error mb-6">
+          <svg xmlns="http://www.w3.org/2000/svg" className="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+          <span>{error}</span>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="table w-full">
+            <thead>
               <tr>
-                <td colSpan={2} className="text-center py-10">
-                  <span className="loading loading-spinner loading-lg"></span>
-                </td>
+                <th>Date & Time</th>
+                <th>Price (USD)</th>
               </tr>
-            ) : pricePoints.length > 0 ? (
-              pricePoints.map((point, index) => (
-                <tr key={index}>
-                  <td>{formatTimestamp(point.timestamp)}</td>
-                  <td>${parseFloat(point.price).toFixed(2)}</td>
+            </thead>
+            <tbody>
+              {loading ? (
+                <tr>
+                  <td colSpan={2} className="text-center py-10">
+                    <span className="loading loading-spinner loading-lg"></span>
+                  </td>
                 </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={2} className="text-center py-10">
-                  No price data available
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : pricePoints.length > 0 ? (
+                pricePoints.map((point, index) => (
+                  <tr key={index}>
+                    <td>{formatTimestamp(point.timestamp)}</td>
+                    <td>${parseFloat(point.price).toFixed(2)}</td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={2} className="text-center py-10">
+                    <div className="flex flex-col items-center gap-2">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-warning" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <p className="font-medium text-lg">No price data available</p>
+                      <p className="text-base-content/70 max-w-md text-center">
+                        {totalPoints === 0 ? 
+                          "The contract has 0 data points. Please initialize the contract with price data first." : 
+                          "No data found for the selected page."}
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
       
       {/* Pagination */}
       {totalPages > 1 && (

@@ -70,40 +70,58 @@ contract InitializePriceData is Script {
         uint256[] memory prices
     ) internal {
         uint256 totalPoints = timestamps.length;
-        uint256 batchCount = (totalPoints + MAX_BATCH_SIZE - 1) / MAX_BATCH_SIZE; // Ceiling division
         
-        for (uint256 i = 0; i < batchCount; i++) {
-            uint256 startIndex = i * MAX_BATCH_SIZE;
-            uint256 endIndex = startIndex + MAX_BATCH_SIZE;
-            if (endIndex > totalPoints) {
-                endIndex = totalPoints;
-            }
-            
-            uint256 batchSize = endIndex - startIndex;
-            
-            // Create arrays for this batch
-            uint256[] memory batchTimestamps = new uint256[](batchSize);
-            uint256[] memory batchPrices = new uint256[](batchSize);
-            
-            // Fill batch arrays
-            for (uint256 j = 0; j < batchSize; j++) {
-                batchTimestamps[j] = timestamps[startIndex + j];
-                batchPrices[j] = prices[startIndex + j];
-            }
-            
-            // Initialize this batch
-            priceDataStorage.initializePrices(instrument, batchTimestamps, batchPrices);
-            
-            // Log batch initialization (simplified for compatibility)
-            console2.log("Initialized batch");
-            console2.log(i + 1);
-            console2.log("of");
-            console2.log(batchCount);
-            console2.log("for");
+        // For the first batch, use initializePrices to set up the initial data
+        uint256 initialBatchSize = totalPoints > MAX_BATCH_SIZE ? MAX_BATCH_SIZE : totalPoints;
+        
+        // Create arrays for the initial batch
+        uint256[] memory initialTimestamps = new uint256[](initialBatchSize);
+        uint256[] memory initialPrices = new uint256[](initialBatchSize);
+        
+        // Fill initial batch arrays
+        for (uint256 j = 0; j < initialBatchSize; j++) {
+            initialTimestamps[j] = timestamps[j];
+            initialPrices[j] = prices[j];
+        }
+        
+        // Initialize with the first batch
+        try priceDataStorage.initializePrices(instrument, initialTimestamps, initialPrices) {
+            console2.log("Initialized first batch for");
             console2.log(instrument == PriceDataStorage.Instrument.ETH_USD_2000_DMA ? "ETH/USD" : "BTC/USD");
             console2.log("with");
-            console2.log(batchSize);
+            console2.log(initialBatchSize);
             console2.log("points");
+        } catch Error(string memory reason) {
+            console2.log("Error initializing first batch:");
+            console2.log(reason);
+            
+            // If instrument is already initialized, we'll just use addPrice for all points
         }
+        
+        // Add remaining points using addPrice, starting after the initial batch
+        for (uint256 i = initialBatchSize; i < totalPoints; i++) {
+            // Add each data point individually
+            try priceDataStorage.addPrice(instrument, timestamps[i], prices[i]) {
+                // Successfully added
+                if (i % 100 == 0 || i == totalPoints - 1) {
+                    console2.log("Added data point");
+                    console2.log(i + 1);
+                    console2.log("of");
+                    console2.log(totalPoints);
+                    console2.log("for");
+                    console2.log(instrument == PriceDataStorage.Instrument.ETH_USD_2000_DMA ? "ETH/USD" : "BTC/USD");
+                }
+            } catch Error(string memory reason) {
+                console2.log("Error adding data point");
+                console2.log(i);
+                console2.log(reason);
+            }
+        }
+        
+        console2.log("Completed initializing");
+        console2.log(instrument == PriceDataStorage.Instrument.ETH_USD_2000_DMA ? "ETH/USD" : "BTC/USD");
+        console2.log("with");
+        console2.log(totalPoints);
+        console2.log("points");
     }
 }

@@ -108,7 +108,7 @@ contract PriceDataStorage is Ownable {
         }
         
         uint256 totalPoints = points.length;
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
         
         // Only calculate MA when we have exactly enough points
         if (totalPoints < maLength) {
@@ -137,7 +137,7 @@ contract PriceDataStorage is Ownable {
      * @return The MA value with 8 decimals, or 0 if not enough data points
      */
     function getMA(Instrument instrument) external view returns (uint256) {
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
         
         // Check if we have enough data points for a valid MA
         if (priceData[instrument].length < maLength) {
@@ -206,7 +206,7 @@ contract PriceDataStorage is Ownable {
      * @return True if we have enough data points for MA calculation
      */
     function hasValidMA(Instrument instrument) external view returns (bool) {
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 2000 : 200;
+        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
         return priceData[instrument].length >= maLength;
     }
     
