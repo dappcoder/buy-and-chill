@@ -64,14 +64,10 @@ forge script script/Init.s.sol --rpc-url localhost --broadcast
 
 ### Update Frontend with Contract Addresses
 
-After deploying contracts with Forge scripts, the contract addresses are stored in the `broadcast` directory. To update the frontend's contract addresses:
-
 ```bash
-cd packages/foundry
-node scripts-js/generateTsAbis.js
+cd packages/nextjs
+node scripts/generateDeployedContracts.js
 ```
-
-This script reads the deployment information from the `broadcast` directory and generates the `deployedContracts.ts` file in the `packages/nextjs/contracts` directory, which the frontend uses to interact with the deployed contracts.
 
 ## Verification
 
