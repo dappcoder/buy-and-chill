@@ -9,7 +9,6 @@ interface TradingViewChartProps {
 
 const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height = 400 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const scriptRef = useRef<HTMLScriptElement | null>(null);
   
   // Map our instruments to TradingView symbols
   const getSymbol = () => {
@@ -104,13 +103,16 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height 
     
     // No need to clean up the script on unmount or instrument change
     // as we're reusing the same script for all instances
+    // Store a reference to the current container element for cleanup
+    const currentContainer = containerRef.current;
+    
     return () => {
       // Just clear the container on unmount
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
+      if (currentContainer) {
+        currentContainer.innerHTML = '';
       }
     };
-  }, [instrument]);
+  }, [instrument, getSymbol]);
 
   return (
     <div 
