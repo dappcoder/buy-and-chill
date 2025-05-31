@@ -347,8 +347,8 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
 
   // Read DAI balance from the MockDAI contract
   const { data: daiBalance /* , isError: isDaiBalanceError, refetch: refetchDaiBalance */ } = useReadContract({
-    address: deployedContracts[31337].MockDAI.address as `0x${string}`,
-    abi: deployedContracts[31337].MockDAI.abi,
+    address: deployedContracts[31337].MockERC20.address as `0x${string}`,
+    abi: deployedContracts[31337].MockERC20.abi,
     functionName: "balanceOf",
     args: connectedAddress ? [connectedAddress as `0x${string}`] : undefined,
     query: {
