@@ -22,6 +22,8 @@ contract PriceDataStorage is Ownable {
     
     // Current MA value for each instrument
     mapping(Instrument => uint256) public maValues;
+    // MA length for each instrument (default: 1200 for ETH, 140 for BTC)
+    mapping(Instrument => uint256) public maLengths;
     
     // Authorized updaters
     mapping(address => bool) public authorizedUpdaters;
@@ -38,7 +40,11 @@ contract PriceDataStorage is Ownable {
         _;
     }
     
-    constructor() Ownable(msg.sender) {}
+    constructor() Ownable(msg.sender) {
+        // Set default MA lengths
+        maLengths[Instrument.ETH_USD_2000_DMA] = 1200;
+        maLengths[Instrument.BTC_USD_200_WMA] = 140;
+    }
     
     /**
      * @dev Add a new price point for an instrument
@@ -108,7 +114,7 @@ contract PriceDataStorage is Ownable {
         }
         
         uint256 totalPoints = points.length;
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
+        uint256 maLength = maLengths[instrument];
         
         // Only calculate MA when we have exactly enough points
         if (totalPoints < maLength) {
@@ -137,13 +143,11 @@ contract PriceDataStorage is Ownable {
      * @return The MA value with 8 decimals, or 0 if not enough data points
      */
     function getMA(Instrument instrument) external view returns (uint256) {
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
-        
+        uint256 maLength = maLengths[instrument];
         // Check if we have enough data points for a valid MA
         if (priceData[instrument].length < maLength) {
             return 0; // Not enough data for MA calculation
         }
-        
         return maValues[instrument];
     }
     
@@ -206,9 +210,10 @@ contract PriceDataStorage is Ownable {
      * @return True if we have enough data points for MA calculation
      */
     function hasValidMA(Instrument instrument) external view returns (bool) {
-        uint256 maLength = instrument == Instrument.ETH_USD_2000_DMA ? 1200 : 140;
+        uint256 maLength = maLengths[instrument];
         return priceData[instrument].length >= maLength;
     }
+    
     
     /**
      * @dev Get a specific price point for an instrument
@@ -264,6 +269,15 @@ contract PriceDataStorage is Ownable {
         emit UpdaterAuthorized(updater, status);
     }
     
+    /**
+     * @dev Set MA length for testing purposes only
+     * @param instrument The instrument to set MA length for
+     * @param newMALength The new MA length to set
+     */
+    function setMALengthForTesting(Instrument instrument, uint256 newMALength) external onlyOwner {
+        maLengths[instrument] = newMALength;
+    }
+
     /**
      * @dev Override MA value for testing purposes only
      * @param instrument The instrument to override MA for
