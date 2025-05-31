@@ -32,6 +32,16 @@ Pyth Network Oracle: The integration with Pyth Oracle is done via PythIntegrator
 
 1Inch: We need to do rebalancing - it means we need to use a DEX. 1inch was chosen because we need TWAP strategy using Limit Orders to gradually build positions at the moving average price.
 
+### Contract interactions (Flow)
+There are in fact two main flows in the whole scheme, BUY and SELL MA tokens. Both of them should have the same flow and trigger interaction between the same components. The happy case result of the two operations is a transfer of DAI tokens and a transfer of MA tokens. Depending on the current underlying asset price, and the stored MA price, the transaction can first trigger a rebalance. After the rebalance has completed (which involves swapping tokens), the MA tokens and DAI are transfered.
+
+So, a user triggers a BUY or SELL from the Frontend.
+The Frontend first gets the latest price feed for an MA from Pyth Hermes in order to push it to the contracts along within the same transaction that calls the @Vault.sol  contract. 
+The @Vault.sol  contract needs to check if it needs rebalancing. It calls @PythIntegrator.sol to validate the offchain price (Pull method) and @PythIntegrator.sol  updates @PriceDataStorage.sol with daily price and MA.
+Then the @Vault.sol , having fresh price data, can decide whether to trigger a rebalance or not.
+If a rebalance needs to be triggered, the @Vault.sol initiates a swap by calling @1inchIntegrator.sol  that in turn calls 1inch on chain contract (aggregator contract).
+After that, for the BUY operation, the @Vault.sol mints MA tokens to user's wallet and transfers DAI tokens from the user. For the SELL operation, the @Vault.sol burns MA tokens and transfers DAI tokens to the user.
+
 ### Pyth Integration
 The data set is initially populated in the PriceDataStorage.sol contract by a script that reads all the prices from the price_data.json file.
 The file in turn is populated with historic data retrieved from PYTH TradingView API endpoint by FetchPythHistoricalData.js .
