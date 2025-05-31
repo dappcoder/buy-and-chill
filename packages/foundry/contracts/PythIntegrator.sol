@@ -3,17 +3,20 @@ pragma solidity ^0.8.19;
 
 import "@pythnetwork/pyth-sdk-solidity/IPyth.sol";
 import "@pythnetwork/pyth-sdk-solidity/PythStructs.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
 /**
  * @title PythIntegrator
  * @dev Contract for integrating with Pyth Network price feeds using the Pull method
+ * Includes mock functionality for testing and development
  * 
  * This contract demonstrates how to:
  * 1. Pull/Fetch the data from Hermes
  * 2. Update the data on chain using updatePriceFeeds method
  * 3. Consume the price
+ * 4. Use mock mode for testing without real Pyth Network connection
  */
-contract PythIntegrator {
+contract PythIntegrator is Ownable {
     // Pyth Network contract interface
     IPyth public pyth;
 
@@ -24,25 +27,163 @@ contract PythIntegrator {
     // Cached prices (updated whenever updatePriceFeeds is called)
     mapping(bytes32 => PythStructs.Price) public latestPrices;
     
+    // Mock mode configuration
+    bool public mockModeEnabled = false;
+    
+    // Mock price data for testing
+    mapping(bytes32 => PythStructs.Price) public mockPrices;
+    
+    // Mock volatility parameters (in basis points, 100 = 1%)
+    uint256 public mockVolatilityPercent = 200; // 2% default volatility
+    
+    // Mock network parameters
+    bool public mockNetworkOutageEnabled = false;
+    bool public mockDelayedUpdateEnabled = false;
+    uint256 public mockUpdateDelayBlocks = 0;
+    uint256 public lastUpdateBlock = 0;
+    
+    // Authorized updaters
+    mapping(address => bool) public authorizedUpdaters;
+    
     // Events
     event PriceUpdated(bytes32 indexed priceId, int64 price, uint64 conf, int32 expo, uint publishTime);
     event AllPricesUpdated(uint updateTime, uint fee);
+    event MockModeToggled(bool isMockEnabled);
+    event MockPriceUpdated(bytes32 indexed priceId, int64 price, uint64 conf);
+    event MockParamsUpdated(string paramName, uint256 value);
+    event MockFailureToggled(string failureType, bool isEnabled);
+    event UpdaterAuthorized(address updater, bool status);
 
+    // Modifiers
+    modifier onlyAuthorized() {
+        require(owner() == msg.sender || authorizedUpdaters[msg.sender], "Not authorized");
+        _;
+    }
+    
     /**
      * @dev Constructor that sets the Pyth contract address
      * @param pythContract The address of the Pyth contract on the current network
      */
-    constructor(address pythContract) {
+    constructor(address pythContract) Ownable(msg.sender) {
         require(pythContract != address(0), "Invalid Pyth contract address");
         pyth = IPyth(pythContract);
+        
+        // Initialize default mock prices
+        _initializeMockPrices();
+    }
+    
+    /**
+     * @dev Initialize default mock prices
+     */
+    function _initializeMockPrices() internal {
+        // Default ETH price: $2500 with 8 decimals precision
+        mockPrices[ETH_USD_PRICE_ID] = PythStructs.Price({
+            price: 250000000000, // $2500 with 8 decimals precision
+            conf: 10000000, // $0.10 confidence
+            expo: -8,
+            publishTime: uint64(block.timestamp)
+        });
+        
+        // Default BTC price: $35000 with 8 decimals precision
+        mockPrices[BTC_USD_PRICE_ID] = PythStructs.Price({
+            price: 3500000000000, // $35000 with 8 decimals precision
+            conf: 100000000, // $1.00 confidence
+            expo: -8,
+            publishTime: uint64(block.timestamp)
+        });
+    }
+    
+    /**
+     * @dev Toggle mock mode on/off
+     * @param _enabled Whether mock mode should be enabled
+     */
+    function setMockModeEnabled(bool _enabled) external onlyOwner {
+        mockModeEnabled = _enabled;
+        emit MockModeToggled(_enabled);
+    }
+    
+    /**
+     * @dev Set mock price for a specific price feed ID
+     * @param priceId The price feed ID to update
+     * @param price The price value (with the same decimal precision as Pyth)
+     * @param conf The confidence interval
+     */
+    function setMockPrice(bytes32 priceId, int64 price, uint64 conf) external onlyAuthorized {
+        mockPrices[priceId] = PythStructs.Price({
+            price: price,
+            conf: conf,
+            expo: -8, // Standard 8 decimals for USD prices
+            publishTime: uint64(block.timestamp)
+        });
+        
+        // If mock mode is enabled, update the latest prices as well
+        if (mockModeEnabled) {
+            latestPrices[priceId] = mockPrices[priceId];
+        }
+        
+        emit MockPriceUpdated(priceId, price, conf);
+    }
+    
+    /**
+     * @dev Set mock volatility percentage (in basis points, 100 = 1%)
+     * @param _volatilityPercent The volatility percentage in basis points
+     */
+    function setMockVolatility(uint256 _volatilityPercent) external onlyOwner {
+        require(_volatilityPercent <= 5000, "Volatility too high"); // Max 50%
+        mockVolatilityPercent = _volatilityPercent;
+        emit MockParamsUpdated("volatility", _volatilityPercent);
+    }
+    
+    /**
+     * @dev Toggle mock network outage scenario
+     * @param _enabled Whether the scenario should be enabled
+     */
+    function setMockNetworkOutage(bool _enabled) external onlyOwner {
+        mockNetworkOutageEnabled = _enabled;
+        emit MockFailureToggled("networkOutage", _enabled);
+    }
+    
+    /**
+     * @dev Toggle mock delayed update scenario
+     * @param _enabled Whether the scenario should be enabled
+     * @param _delayBlocks Number of blocks to delay updates
+     */
+    function setMockDelayedUpdate(bool _enabled, uint256 _delayBlocks) external onlyOwner {
+        mockDelayedUpdateEnabled = _enabled;
+        mockUpdateDelayBlocks = _delayBlocks;
+        emit MockFailureToggled("delayedUpdate", _enabled);
+        emit MockParamsUpdated("delayBlocks", _delayBlocks);
+    }
+    
+    /**
+     * @dev Set the authorization status for an updater
+     * @param updater The address to authorize/deauthorize
+     * @param status The authorization status
+     */
+    function setUpdaterAuthorization(address updater, bool status) external onlyOwner {
+        authorizedUpdaters[updater] = status;
+        emit UpdaterAuthorized(updater, status);
     }
 
     /**
      * @dev Updates price feeds with the provided update data and caches the latest prices
-     * @param priceUpdateData The price update data obtained from Pyth's Hermes API
+     * @param priceUpdateData The price update data from Pyth Network
      * @notice This function must be called with sufficient ETH to cover the update fee
      */
     function updatePriceFeeds(bytes[] calldata priceUpdateData) external payable {
+        if (mockModeEnabled) {
+            // In mock mode, simulate price updates without calling Pyth
+            _updateMockPrices();
+            emit AllPricesUpdated(block.timestamp, 0);
+            
+            // Refund all ETH since we're not calling Pyth
+            if (msg.value > 0) {
+                payable(msg.sender).transfer(msg.value);
+            }
+            return;
+        }
+        
+        // In real mode, proceed with actual Pyth update
         // Calculate the required fee for updating price feeds
         uint fee = pyth.getUpdateFee(priceUpdateData);
         
@@ -92,13 +233,101 @@ contract PythIntegrator {
             );
         } catch {}
     }
+    
+    /**
+     * @dev Updates mock prices with random volatility and simulated network conditions
+     * @notice This is called internally when in mock mode
+     */
+    function _updateMockPrices() internal {
+        // Check if we should simulate network outage
+        if (mockNetworkOutageEnabled) {
+            // Do nothing - simulate network outage by not updating prices
+            return;
+        }
+        
+        // Check if we should simulate delayed updates
+        if (mockDelayedUpdateEnabled) {
+            if (block.number - lastUpdateBlock < mockUpdateDelayBlocks) {
+                // Not enough blocks have passed, don't update yet
+                return;
+            }
+        }
+        
+        // Record this update
+        lastUpdateBlock = block.number;
+        
+        // Apply random volatility to ETH price
+        PythStructs.Price memory ethPrice = mockPrices[ETH_USD_PRICE_ID];
+        int64 ethPriceChange = int64(int256(_getRandomVolatilityChange(uint256(uint64(ethPrice.price)))));
+        ethPrice.price += ethPriceChange;
+        ethPrice.publishTime = uint64(block.timestamp);
+        mockPrices[ETH_USD_PRICE_ID] = ethPrice;
+        latestPrices[ETH_USD_PRICE_ID] = ethPrice;
+        
+        // Apply random volatility to BTC price
+        PythStructs.Price memory btcPrice = mockPrices[BTC_USD_PRICE_ID];
+        int64 btcPriceChange = int64(int256(_getRandomVolatilityChange(uint256(uint64(btcPrice.price)))));
+        btcPrice.price += btcPriceChange;
+        btcPrice.publishTime = uint64(block.timestamp);
+        mockPrices[BTC_USD_PRICE_ID] = btcPrice;
+        latestPrices[BTC_USD_PRICE_ID] = btcPrice;
+        
+        // Emit events for the updated prices
+        emit PriceUpdated(
+            ETH_USD_PRICE_ID,
+            ethPrice.price,
+            ethPrice.conf,
+            ethPrice.expo,
+            ethPrice.publishTime
+        );
+        
+        emit PriceUpdated(
+            BTC_USD_PRICE_ID,
+            btcPrice.price,
+            btcPrice.conf,
+            btcPrice.expo,
+            btcPrice.publishTime
+        );
+    }
+    
+    /**
+     * @dev Calculates a random price change based on the configured volatility
+     * @param currentPrice The current price to apply volatility to
+     * @return The price change amount (can be positive or negative)
+     */
+    function _getRandomVolatilityChange(uint256 currentPrice) internal view returns (int256) {
+        // Calculate maximum change based on volatility percentage
+        uint256 maxChange = (currentPrice * mockVolatilityPercent) / 10000; // Convert basis points to percentage
+        
+        // Generate pseudo-random number using block data
+        uint256 randomValue = uint256(keccak256(abi.encodePacked(
+            blockhash(block.number - 1),
+            block.timestamp,
+            block.difficulty // Using block.difficulty instead of block.prevrandao for compatibility
+        )));
+        
+        // Calculate random change within the volatility range
+        uint256 change = randomValue % maxChange;
+        
+        // Determine if change is positive or negative (50/50 chance)
+        if (randomValue % 2 == 0) {
+            return int256(change);
+        } else {
+            return -int256(change);
+        }
+    }
 
     /**
      * @dev Gets the latest ETH/USD price 
      * @return The latest ETH/USD price structure
      */
     function getLatestEthUsdPrice() external view returns (PythStructs.Price memory) {
-        // Check if we have a cached price
+        // In mock mode, return the mock price
+        if (mockModeEnabled) {
+            return mockPrices[ETH_USD_PRICE_ID];
+        }
+        
+        // In real mode, check if we have a cached price
         if (latestPrices[ETH_USD_PRICE_ID].publishTime > 0) {
             return latestPrices[ETH_USD_PRICE_ID];
         }
@@ -112,7 +341,12 @@ contract PythIntegrator {
      * @return The latest BTC/USD price structure
      */
     function getLatestBtcUsdPrice() external view returns (PythStructs.Price memory) {
-        // Check if we have a cached price
+        // In mock mode, return the mock price
+        if (mockModeEnabled) {
+            return mockPrices[BTC_USD_PRICE_ID];
+        }
+        
+        // In real mode, check if we have a cached price
         if (latestPrices[BTC_USD_PRICE_ID].publishTime > 0) {
             return latestPrices[BTC_USD_PRICE_ID];
         }

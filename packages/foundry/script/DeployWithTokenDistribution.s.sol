@@ -97,6 +97,18 @@ contract DeployWithTokenDistribution is Script {
         pds.setUpdaterAuthorization(deployer, true);
         console2.log("Set updater authorization in PriceDataStorage for:", deployer);
         
+        // Set the PriceDataStorage updater authorization for the BURNER_WALLET
+        pds.setUpdaterAuthorization(BURNER_WALLET, true);
+        console2.log("Set updater authorization in PriceDataStorage for BURNER_WALLET:", BURNER_WALLET);
+        
+        // Transfer ownership of PythIntegrator to BURNER_WALLET
+        pi.transferOwnership(BURNER_WALLET);
+        console2.log("Transferred ownership of PythIntegrator to BURNER_WALLET:", BURNER_WALLET);
+        
+        // Transfer ownership of OneInchIntegrator to BURNER_WALLET
+        oi.transferOwnership(BURNER_WALLET);
+        console2.log("Transferred ownership of OneInchIntegrator to BURNER_WALLET:", BURNER_WALLET);
+        
         vm.stopBroadcast();
     }
 

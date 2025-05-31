@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import type { NextPage } from "next";
 import { useAccount, useReadContract } from "wagmi";
-import { ArrowTrendingUpIcon, ChartBarIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import { ArrowTrendingUpIcon, BeakerIcon, ChartBarIcon, CurrencyDollarIcon } from "@heroicons/react/24/outline";
+import MockControls from "~~/components/buy-and-chill/MockControls";
 import TradingViewChart from "~~/components/buy-and-chill/TradingViewChart";
 import { Address, RainbowKitCustomConnectButton } from "~~/components/scaffold-eth";
 import deployedContracts from "~~/contracts/deployedContracts";
@@ -15,6 +16,7 @@ const Home: NextPage = () => {
   const { address: connectedAddress, isConnected } = useAccount();
   const [selectedInstrument, setSelectedInstrument] = useState<string>("ETH/USD 2000 DMA");
   const [showDemoControls, setShowDemoControls] = useState<boolean>(false);
+  const [showMockControls, setShowMockControls] = useState<boolean>(false);
   const [newMAValue, setNewMAValue] = useState<string>("");
 
   // Mock data for token prices (fallback when contract calls fail)
@@ -115,178 +117,196 @@ const Home: NextPage = () => {
   };
 
   return (
-    <>
-      <div className="flex items-center flex-col grow pt-6 px-4">
-        <div className="w-full max-w-5xl">
-          <h1 className="text-center mb-8">
-            <span className="block text-4xl font-bold">Buy and Chill</span>
-            <span className="block text-xl mt-1">Simple Moving Average Index Tokens</span>
-          </h1>
-
-          {/* Instrument Dropdown - Common for both connected/disconnected states */}
-          <div className="card bg-base-100 shadow-xl mb-6">
-            <div className="card-body">
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div className="form-control w-full max-w-xs">
-                  <label className="label">
-                    <span className="label-text font-semibold">Select Instrument</span>
-                  </label>
-                  <select
-                    className="select select-bordered w-full"
-                    value={selectedInstrument}
-                    onChange={e => setSelectedInstrument(e.target.value)}
-                  >
-                    <option value="ETH/USD 2000 DMA">ETH/USD 2000 DMA</option>
-                    <option value="BTC/USD 200 WMA">BTC/USD 200 WMA</option>
-                  </select>
-                </div>
-                <div className="flex flex-col items-end">
-                  <span className="text-sm font-medium">Current Price</span>
-                  <span className="text-3xl font-bold">{formattedPrice}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* TradingView Chart */}
-          <div className="card bg-base-100 shadow-xl mb-6">
-            <div className="card-body">
-              <h2 className="card-title flex items-center gap-2">
-                <ChartBarIcon className="h-6 w-6" />
-                Historical Performance with Moving Average
-              </h2>
-              <div className="bg-base-200 rounded-lg overflow-hidden">
-                <TradingViewChart instrument={selectedInstrument} height={400} />
-              </div>
-              <div className="flex justify-between text-xs text-base-content/70 mt-2">
-                <span className="italic">
-                  Chart shows {selectedInstrument === "ETH/USD 2000 DMA" ? "2000-day" : "200-week"} moving average
-                </span>
-                <span>Source: TradingView</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Placeholder for Performance Table - Will implement in next phase */}
-          <div className="card bg-base-100 shadow-xl mb-6">
-            <div className="card-body">
-              <h2 className="card-title flex items-center gap-2">
-                <CurrencyDollarIcon className="h-6 w-6" />
-                Performance Metrics
-              </h2>
-              <div className="overflow-x-auto">
-                <table className="table w-full">
-                  <thead>
-                    <tr>
-                      <th>Period</th>
-                      <th>1 Week</th>
-                      <th>1 Month</th>
-                      <th>6 Months</th>
-                      <th>1 Year</th>
-                      <th>2 Years</th>
-                      <th>3 Years</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr>
-                      <td>Return</td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 0
-                          ? formatPerformance(effectivePerformanceData[0])
-                          : "+0.00%"}
-                      </td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 1
-                          ? formatPerformance(effectivePerformanceData[1])
-                          : "+0.00%"}
-                      </td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 2
-                          ? formatPerformance(effectivePerformanceData[2])
-                          : "+0.00%"}
-                      </td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 3
-                          ? formatPerformance(effectivePerformanceData[3])
-                          : "+0.00%"}
-                      </td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 4
-                          ? formatPerformance(effectivePerformanceData[4])
-                          : "+0.00%"}
-                      </td>
-                      <td className="text-success">
-                        {effectivePerformanceData && effectivePerformanceData.length > 5
-                          ? formatPerformance(effectivePerformanceData[5])
-                          : "+0.00%"}
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          {/* Connect Wallet or Buy/Sell Interface based on connection status */}
-          {!isConnected ? (
-            <div className="card bg-primary text-primary-content shadow-xl">
-              <div className="card-body items-center text-center">
-                <h2 className="card-title text-2xl mb-2">Ready to invest?</h2>
-                <p className="mb-4">Connect your wallet to buy and sell SMA index tokens.</p>
-                <div className="card-actions">
-                  {/* Using the existing wallet connect button from Scaffold-ETH */}
-                  <RainbowKitCustomConnectButton />
-                </div>
-              </div>
-            </div>
-          ) : (
-            <>
-              <TradingInterface
-                connectedAddress={connectedAddress as `0x${string}`}
-                selectedInstrument={selectedInstrument}
-                tokenPrice={effectiveTokenPrice as bigint}
-              />
-
-              {/* Demo Controls for Hackathon - Hidden by default */}
-              <div className="mt-6">
-                <button className="btn btn-sm btn-ghost" onClick={() => setShowDemoControls(!showDemoControls)}>
-                  {showDemoControls ? "Hide Demo Controls" : "Show Demo Controls"}
-                </button>
-
-                {showDemoControls && (
-                  <div className="card bg-base-300 shadow-xl mt-2">
-                    <div className="card-body">
-                      <div className={`collapse ${showDemoControls ? "collapse-open" : "collapse-close"}`}>
-                        <div className="collapse-content">
-                          <div className="form-control">
-                            <label className="label">
-                              <span className="label-text">Demo Deposit (Test Function)</span>
-                            </label>
-                            <div className="flex gap-2">
-                              <input
-                                type="number"
-                                placeholder="Enter DAI amount to deposit"
-                                className="input input-bordered w-full"
-                                value={newMAValue}
-                                onChange={e => setNewMAValue(e.target.value)}
-                              />
-                              <button className="btn btn-primary" onClick={handleUpdateMAValue} disabled={!newMAValue}>
-                                Deposit
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      <p className="text-xs mt-1 opacity-70">Use this to simulate price changes during the demo</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          )}
+    <div className="flex flex-col gap-8 py-8 px-4 lg:px-8 w-full">
+      {/* Page Header */}
+      <div className="flex flex-col gap-2">
+        <h1 className="text-4xl font-bold">Buy and Chill</h1>
+        <p className="text-lg">
+          A DeFi instrument that tracks moving averages of ETH/USD (2000-day) and BTC/USD (200-week)
+        </p>
+        <div className="flex gap-4 mt-2">
+          <button
+            className="btn btn-sm btn-outline gap-1"
+            onClick={() => setShowDemoControls(!showDemoControls)}
+          >
+            <ChartBarIcon className="h-4 w-4" />
+            {showDemoControls ? "Hide Demo Controls" : "Show Demo Controls"}
+          </button>
+          <button
+            className="btn btn-sm btn-outline gap-1"
+            onClick={() => setShowMockControls(!showMockControls)}
+          >
+            <BeakerIcon className="h-4 w-4" />
+            {showMockControls ? "Hide Mock Controls" : "Show Mock Controls"}
+          </button>
         </div>
       </div>
-    </>
+      
+      {/* Mock Controls */}
+      {showMockControls && <MockControls />}
+      
+      {/* Instrument Dropdown - Common for both connected/disconnected states */}
+      <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card-body">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="form-control w-full max-w-xs">
+              <label className="label">
+                <span className="label-text font-semibold">Select Instrument</span>
+              </label>
+              <select
+                className="select select-bordered w-full"
+                value={selectedInstrument}
+                onChange={e => setSelectedInstrument(e.target.value)}
+              >
+                <option value="ETH/USD 2000 DMA">ETH/USD 2000 DMA</option>
+                <option value="BTC/USD 200 WMA">BTC/USD 200 WMA</option>
+              </select>
+            </div>
+            <div className="flex flex-col items-end">
+              <span className="text-sm font-medium">Current Price</span>
+              <span className="text-3xl font-bold">{formattedPrice}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* TradingView Chart */}
+      <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card-body">
+          <h2 className="card-title flex items-center gap-2">
+            <ChartBarIcon className="h-6 w-6" />
+            Historical Performance with Moving Average
+          </h2>
+          <div className="bg-base-200 rounded-lg overflow-hidden">
+            <TradingViewChart instrument={selectedInstrument} height={400} />
+          </div>
+          <div className="flex justify-between text-xs text-base-content/70 mt-2">
+            <span className="italic">
+              Chart shows {selectedInstrument === "ETH/USD 2000 DMA" ? "2000-day" : "200-week"} moving average
+            </span>
+            <span>Source: TradingView</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Placeholder for Performance Table - Will implement in next phase */}
+      <div className="card bg-base-100 shadow-xl mb-6">
+        <div className="card-body">
+          <h2 className="card-title flex items-center gap-2">
+            <CurrencyDollarIcon className="h-6 w-6" />
+            Performance Metrics
+          </h2>
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              <thead>
+                <tr>
+                  <th>Period</th>
+                  <th>1 Week</th>
+                  <th>1 Month</th>
+                  <th>6 Months</th>
+                  <th>1 Year</th>
+                  <th>2 Years</th>
+                  <th>3 Years</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Return</td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 0
+                      ? formatPerformance(effectivePerformanceData[0])
+                      : "+0.00%"}
+                  </td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 1
+                      ? formatPerformance(effectivePerformanceData[1])
+                      : "+0.00%"}
+                  </td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 2
+                      ? formatPerformance(effectivePerformanceData[2])
+                      : "+0.00%"}
+                  </td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 3
+                      ? formatPerformance(effectivePerformanceData[3])
+                      : "+0.00%"}
+                  </td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 4
+                      ? formatPerformance(effectivePerformanceData[4])
+                      : "+0.00%"}
+                  </td>
+                  <td className="text-success">
+                    {effectivePerformanceData && effectivePerformanceData.length > 5
+                      ? formatPerformance(effectivePerformanceData[5])
+                      : "+0.00%"}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      {/* Connect Wallet or Buy/Sell Interface based on connection status */}
+      {!isConnected ? (
+        <div className="card bg-primary text-primary-content shadow-xl">
+          <div className="card-body items-center text-center">
+            <h2 className="card-title text-2xl mb-2">Ready to invest?</h2>
+            <p className="mb-4">Connect your wallet to buy and sell SMA index tokens.</p>
+            <div className="card-actions">
+              {/* Using the existing wallet connect button from Scaffold-ETH */}
+              <RainbowKitCustomConnectButton />
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
+          <TradingInterface
+            connectedAddress={connectedAddress as `0x${string}`}
+            selectedInstrument={selectedInstrument}
+            tokenPrice={effectiveTokenPrice as bigint}
+          />
+
+          {/* Demo Controls for Hackathon - Hidden by default */}
+          <div className="mt-6">
+            <button className="btn btn-sm btn-ghost" onClick={() => setShowDemoControls(!showDemoControls)}>
+              {showDemoControls ? "Hide Demo Controls" : "Show Demo Controls"}
+            </button>
+
+            {showDemoControls && (
+              <div className="card bg-base-300 shadow-xl mt-2">
+                <div className="card-body">
+                  <div className={`collapse ${showDemoControls ? "collapse-open" : "collapse-close"}`}>
+                    <div className="collapse-content">
+                      <div className="form-control">
+                        <label className="label">
+                          <span className="label-text">Demo Deposit (Test Function)</span>
+                        </label>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            placeholder="Enter DAI amount to deposit"
+                            className="input input-bordered w-full"
+                            value={newMAValue}
+                            onChange={e => setNewMAValue(e.target.value)}
+                          />
+                          <button className="btn btn-primary" onClick={handleUpdateMAValue} disabled={!newMAValue}>
+                            Deposit
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-xs mt-1 opacity-70">Use this to simulate price changes during the demo</p>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </div>
   );
 };
 
