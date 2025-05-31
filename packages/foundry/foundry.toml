@@ -2,7 +2,20 @@
 src = 'contracts'
 out = 'out'
 libs = ['lib']
-fs_permissions = [{ access = "read-write", path = "./"}]
+# Updated fs_permissions to allow access to node_modules
+fs_permissions = [
+    { access = "read-write", path = "./" },
+    { access = "read", path = "../../node_modules/" },
+    { access = "read", path = "../../" }
+]
+
+# Explicitly allow imports from node_modules
+allow_paths = ["../../node_modules/"]
+
+# Remappings for external npm packages
+remappings = [
+    "@pythnetwork/=../../node_modules/@pythnetwork/"
+]
 
 
 [rpc_endpoints]

@@ -1,3 +1,5 @@
+// Innovative Always Up DeFi instrument! Reduces ETH and BTC volatility. Not financial advice. DYOR!
+
 // Use ES module syntax
 import axios from 'axios';
 import fs from 'fs';

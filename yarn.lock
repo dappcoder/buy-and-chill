@@ -843,7 +843,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.26.0":
+"@babel/runtime@npm:^7.12.5, @babel/runtime@npm:^7.15.4, @babel/runtime@npm:^7.21.0, @babel/runtime@npm:^7.26.0":
   version: 7.27.3
   resolution: "@babel/runtime@npm:7.27.3"
   checksum: 4eadd745756c9de7a9bba1b2b138b8b99f34aa544cf69c7e6fd1d2a120ba6d31580e93f00657145add7a8945db8ffea5ef7fdbe18f0f0f8e82f2929cb56a0d61
@@ -3367,6 +3367,47 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@pythnetwork/price-service-client@npm:1.9.0":
+  version: 1.9.0
+  resolution: "@pythnetwork/price-service-client@npm:1.9.0"
+  dependencies:
+    "@pythnetwork/price-service-sdk": "*"
+    "@types/ws": ^8.5.3
+    axios: ^1.5.1
+    axios-retry: ^3.8.0
+    isomorphic-ws: ^4.0.1
+    ts-log: ^2.2.4
+    ws: ^8.6.0
+  checksum: 97257fa0d74e3e4c3a9b0e1939951b1b236c36a0a864e37cf748286e911a0a4c7260d08050929e958531eef1acefdf1bf10a66e53b0180ba645f7224fa8d6f9b
+  languageName: node
+  linkType: hard
+
+"@pythnetwork/price-service-sdk@npm:*":
+  version: 1.8.0
+  resolution: "@pythnetwork/price-service-sdk@npm:1.8.0"
+  dependencies:
+    bn.js: ^5.2.1
+  checksum: e843017db8469bc50c0e77b3db39c9756ff8d1c607a45626797ec4446121b9430770abcddcc15e08be132fa6081a5d872f0f79334cefceb7a1e7455300a1a426
+  languageName: node
+  linkType: hard
+
+"@pythnetwork/pyth-evm-js@npm:^1.83.0":
+  version: 1.83.0
+  resolution: "@pythnetwork/pyth-evm-js@npm:1.83.0"
+  dependencies:
+    "@pythnetwork/price-service-client": 1.9.0
+    buffer: ^6.0.3
+  checksum: aeb0e062e383138063c00999b2f51209c33db18f448c92b17d9f964a23a70c54ea942a5d6b33c09a493a9650a7d957dd608de01fbd51cd6ac70ed8d73ccfbb24
+  languageName: node
+  linkType: hard
+
+"@pythnetwork/pyth-sdk-solidity@npm:^4.1.0":
+  version: 4.1.0
+  resolution: "@pythnetwork/pyth-sdk-solidity@npm:4.1.0"
+  checksum: 0395a784d83cafe653e90c1555028167a035baedc3e2fffe1f8a61fd3b51394fb27f4932900da9464e8670e84df9a77e97c77b8199625474e09e33a2d35a45d2
+  languageName: node
+  linkType: hard
+
 "@rainbow-me/rainbowkit@npm:2.2.5":
   version: 2.2.5
   resolution: "@rainbow-me/rainbowkit@npm:2.2.5"
@@ -4775,6 +4816,15 @@ __metadata:
   version: 3.0.0
   resolution: "@types/wrap-ansi@npm:3.0.0"
   checksum: 492f0610093b5802f45ca292777679bb9b381f1f32ae939956dd9e00bf81dba7cc99979687620a2817d9a7d8b59928207698166c47a0861c6a2e5c30d4aaf1e9
+  languageName: node
+  linkType: hard
+
+"@types/ws@npm:^8.5.3":
+  version: 8.18.1
+  resolution: "@types/ws@npm:8.18.1"
+  dependencies:
+    "@types/node": "*"
+  checksum: 0331b14cde388e2805af66cad3e3f51857db8e68ed91e5b99750915e96fe7572e58296dc99999331bbcf08f0ff00a227a0bb214e991f53c2a5aca7b0e71173fa
   languageName: node
   linkType: hard
 
@@ -6301,7 +6351,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^1.9.0":
+"axios-retry@npm:^3.8.0":
+  version: 3.9.1
+  resolution: "axios-retry@npm:3.9.1"
+  dependencies:
+    "@babel/runtime": ^7.15.4
+    is-retry-allowed: ^2.2.0
+  checksum: 44e574ad559e4ee638e735662e9b9fcb69a1da6652adc3a75ca4b060e0fd40bdd7ac718e7743f51c0dad54149a6f3c09109275bf90298042542e80a17740a4e5
+  languageName: node
+  linkType: hard
+
+"axios@npm:^1.5.1, axios@npm:^1.9.0":
   version: 1.9.0
   resolution: "axios@npm:1.9.0"
   dependencies:
@@ -8440,7 +8500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^6.14.3":
+"ethers@npm:6, ethers@npm:^6.14.3":
   version: 6.14.3
   resolution: "ethers@npm:6.14.3"
   dependencies:
@@ -9969,6 +10029,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"is-retry-allowed@npm:^2.2.0":
+  version: 2.2.0
+  resolution: "is-retry-allowed@npm:2.2.0"
+  checksum: 3d1103a9290b5d03626756a41054844633eac78bc5d3e3a95b13afeae94fa3cfbcf7f0b5520d83f75f48a25ce7b142fdbac4217dc4b0630f3ea55e866ec3a029
+  languageName: node
+  linkType: hard
+
 "is-set@npm:^2.0.3":
   version: 2.0.3
   resolution: "is-set@npm:2.0.3"
@@ -10110,6 +10177,15 @@ __metadata:
   version: 1.2.1
   resolution: "iso-url@npm:1.2.1"
   checksum: 1af98c4ed6a39598407fd8c3c13e997c978985f477af2be3390d2aa3e422b4b5992ffbb0dac68656b165c71850fff748ac1309d29d4f2a728707d76bf0f98557
+  languageName: node
+  linkType: hard
+
+"isomorphic-ws@npm:^4.0.1":
+  version: 4.0.1
+  resolution: "isomorphic-ws@npm:4.0.1"
+  peerDependencies:
+    ws: "*"
+  checksum: d7190eadefdc28bdb93d67b5f0c603385aaf87724fa2974abb382ac1ec9756ed2cfb27065cbe76122879c2d452e2982bc4314317f3d6c737ddda6c047328771a
   languageName: node
   linkType: hard
 
@@ -13547,6 +13623,9 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "se-2@workspace:."
   dependencies:
+    "@pythnetwork/pyth-evm-js": ^1.83.0
+    "@pythnetwork/pyth-sdk-solidity": ^4.1.0
+    ethers: 6
     husky: ~9.1.6
     lint-staged: ~13.2.2
   languageName: unknown
@@ -14576,6 +14655,13 @@ __metadata:
   peerDependencies:
     typescript: ">=4.8.4"
   checksum: 5b1ef89105654d93d67582308bd8dfe4bbf6874fccbcaa729b08fbb00a940fd4c691ca6d0d2b18c3c70878d9a7e503421b7cc473dbc3d0d54258b86401d4b15d
+  languageName: node
+  linkType: hard
+
+"ts-log@npm:^2.2.4":
+  version: 2.2.7
+  resolution: "ts-log@npm:2.2.7"
+  checksum: c423a5eb54abb9471578902953814d3d0c88b3f237db016998f8998ecf982cb0f748bb8ebf93670eeba9b836ff0ce407d8065a340f3ab218ea7b9442c255b3d4
   languageName: node
   linkType: hard
 
@@ -15700,7 +15786,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ws@npm:8.18.2":
+"ws@npm:8.18.2, ws@npm:^8.6.0":
   version: 8.18.2
   resolution: "ws@npm:8.18.2"
   peerDependencies:
