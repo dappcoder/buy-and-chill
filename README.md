@@ -161,3 +161,6 @@ So here are some potential mitigation:
     * Use limit orders where possible
     * Execute larger trades in tranches
     * Trade during lower-volatility periods
+
+
+
