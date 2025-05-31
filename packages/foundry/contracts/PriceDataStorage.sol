@@ -263,4 +263,14 @@ contract PriceDataStorage is Ownable {
         authorizedUpdaters[updater] = status;
         emit UpdaterAuthorized(updater, status);
     }
+    
+    /**
+     * @dev Override MA value for testing purposes only
+     * @param instrument The instrument to override MA for
+     * @param newMAValue The new MA value to set
+     */
+    function overrideMAForTesting(Instrument instrument, uint256 newMAValue) external onlyOwner {
+        maValues[instrument] = newMAValue;
+        emit MAUpdated(instrument, newMAValue);
+    }
 }
