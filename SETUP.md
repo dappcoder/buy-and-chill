@@ -12,7 +12,7 @@
 
 ```bash
 # Clone repository
-git clone https://github.com/dappcoder/buy-and-chill.git
+git clone git@github.com:dappcoder/buy-and-chill.git
 cd buy-and-chill
 
 # Install dependencies
