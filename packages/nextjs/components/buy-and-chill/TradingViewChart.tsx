@@ -10,17 +10,16 @@ interface TradingViewChartProps {
 const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height = 400 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Map our instruments to TradingView symbols
-  const getSymbol = () => {
-    if (instrument === "ETH/USD 2000 DMA") {
-      return "ETHUSD";
-    } else if (instrument === "BTC/USD 200 WMA") {
-      return "BTCUSD";
-    }
-    return "BTCUSD"; // Default fallback
-  };
-
   useEffect(() => {
+    // Map our instruments to TradingView symbols
+    const getSymbol = () => {
+      if (instrument === "ETH/USD 2000 DMA") {
+        return "ETHUSD";
+      } else if (instrument === "BTC/USD 200 WMA") {
+        return "BTCUSD";
+      }
+      return "BTCUSD"; // Default fallback
+    };
     // Check if TradingView script already exists
     const existingScript = document.getElementById('tradingview-widget-script');
     
@@ -112,7 +111,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height 
         currentContainer.innerHTML = '';
       }
     };
-  }, [instrument, getSymbol]);
+  }, [instrument]);
 
   return (
     <div 
