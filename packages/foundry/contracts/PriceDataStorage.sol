@@ -149,7 +149,7 @@ contract PriceDataStorage is Ownable {
     
     /**
      * @dev Get the latest price for an instrument
-     * @param instrument The instrument to get price for
+     * @param instrument The instrument to get data for
      * @return The latest price with 8 decimals
      */
     function getLatestPrice(Instrument instrument) external view returns (uint256) {
