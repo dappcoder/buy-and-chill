@@ -327,12 +327,19 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
   const [isCalculating, setIsCalculating] = useState<boolean>(false);
 
   // Mock data for token balances (fallback when contract calls fail)
-  // Keeping the values for reference but not using them directly anymore
-  // const mockBalances = {
-  //   "ETH/USD 2000 DMA": 0.5,
-  //   "BTC/USD 200 WMA": 0.025,
-  //   "DAI": 1000
-  // };
+  const mockTokenBalances = {
+    "DAI": "1000.00",
+    "BTC": "0.00",
+    "ETH": "0.00",
+    "AAPL": "0.00",
+    "TSLA": "0.00",
+    "MSFT": "0.00",
+    "AMZN": "0.00",
+    "GOOGL": "0.00",
+  };
+
+  // Fixed price used in the Vault contract for mock operations
+  const FIXED_PRICE = 1996.15;
 
   // Read token balance from Vault contract (ERC20 balanceOf) without fallback to mock data
   const { data: tokenBalance /* , isError: isTokenBalanceError, refetch: refetchTokenBalance */ } = useReadContract({
@@ -402,8 +409,8 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
     if (operationType === "buy") {
       // Buying tokens with DAI
       // Apply price impact: less tokens received due to slippage
-      // MA values from PriceDataStorage use 8 decimal places, not 18
-      const effectivePrice = (Number(tokenPrice) / 10 ** 8) * (1 + priceImpact / 100);
+      // Use the fixed price from the Vault contract for mock operations
+      const effectivePrice = FIXED_PRICE * (1 + priceImpact / 100);
       const tokensToReceive = numAmount / effectivePrice;
 
       return (
@@ -414,19 +421,15 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
           </span>
           <span className="text-xs text-base-content/70">Price impact: ~{priceImpact.toFixed(2)}%</span>
           <span className="text-xs text-base-content/70">
-            1 {selectedInstrument} = $
-            {(Number(tokenPrice) / 10 ** 8).toLocaleString("en-US", {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 2,
-            })}
+            1 {selectedInstrument} = ${FIXED_PRICE.toFixed(2)}
           </span>
         </div>
       );
     } else {
       // Selling tokens for DAI
       // Apply price impact: less DAI received due to slippage
-      // MA values from PriceDataStorage use 8 decimal places, not 18
-      const effectivePrice = (Number(tokenPrice) / 10 ** 8) * (1 - priceImpact / 100);
+      // Use the fixed price from the Vault contract for mock operations
+      const effectivePrice = FIXED_PRICE * (1 - priceImpact / 100);
       const daiToReceive = numAmount * effectivePrice;
 
       return (
@@ -547,13 +550,13 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
             let daiAmount = 0;
 
             if (operationType === "buy") {
-              // MA values from PriceDataStorage use 8 decimal places, not 18
-              const effectivePrice = (Number(tokenPrice) / 10 ** 8) * (1 + priceImpact / 100);
+              // Use the fixed price from the Vault contract for mock operations
+              const effectivePrice = FIXED_PRICE * (1 + priceImpact / 100);
               tokensAmount = numAmount / effectivePrice;
               daiAmount = numAmount;
             } else {
-              // MA values from PriceDataStorage use 8 decimal places, not 18
-              const effectivePrice = (Number(tokenPrice) / 10 ** 8) * (1 - priceImpact / 100);
+              // Use the fixed price from the Vault contract for mock operations
+              const effectivePrice = FIXED_PRICE * (1 - priceImpact / 100);
               tokensAmount = numAmount;
               daiAmount = numAmount * effectivePrice;
             }
@@ -567,7 +570,7 @@ const TradingInterface: React.FC<TradingInterfaceProps> = ({ connectedAddress, s
                   ? `${tokensAmount.toFixed(6)} ${selectedInstrument}`
                   : `${numAmount.toFixed(6)} ${selectedInstrument}`,
               cost: operationType === "buy" ? `${numAmount.toFixed(2)} DAI` : `${daiAmount.toFixed(2)} DAI`,
-              price: `$${(Number(tokenPrice) / 10 ** 8).toFixed(2)}`,
+              price: `$${FIXED_PRICE.toFixed(2)}`,  // Use fixed price
               priceImpact: `${priceImpact.toFixed(2)}%`,
               fee: `${(numAmount * 0.003).toFixed(2)} DAI (0.3%)`, // Mock fee
             });
