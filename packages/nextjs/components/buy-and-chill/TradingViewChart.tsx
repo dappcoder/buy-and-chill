@@ -54,7 +54,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height 
           container_id: containerRef.current.id,
           studies_overrides: {
             // Configure the SMA appearance
-            "moving average.ma.color": instrument === "ETH/USD 2000 DMA" ? "#FF9800" : "#00BCD4",
+            "moving average.ma.color": "#00BCD4", // Blue color for both indicators
             "moving average.ma.linewidth": 3,
             "moving average.ma.transparency": 20,
             "moving average.ma.style": 0, // 0 = solid, 1 = dotted, 2 = dashed, 3 = large dashed
@@ -72,7 +72,7 @@ const TradingViewChart: React.FC<TradingViewChartProps> = ({ instrument, height 
               },
               // Override the default appearance
               outputs: {
-                plot: instrument === "ETH/USD 2000 DMA" ? "#FF9800" : "#00BCD4",
+                plot: "#00BCD4", // Blue color for both indicators
               },
             },
           ],
