@@ -58,12 +58,12 @@ export function getMATypeNumberFromInstrument(instrument: string): number {
 export function getMockDataForInstrument(instrument: string, dataType: "price" | "performance" | "balance") {
   const mockData = {
     price: {
-      "ETH/USD 2000 DMA": BigInt(1850 * 10 ** 8),
-      "BTC/USD 200 WMA": BigInt(29850 * 10 ** 8),
+      "ETH/USD 2000 DMA": BigInt(1996 * 10 ** 8),
+      "BTC/USD 200 WMA": BigInt(48080 * 10 ** 8),
     },
     performance: {
-      "ETH/USD 2000 DMA": [125, 350, 780, 1450, 2200, 3100], // in basis points (100 = 1%)
-      "BTC/USD 200 WMA": [80, 280, 650, 1200, 1950, 2800],
+      "ETH/USD 2000 DMA": [43, 177, 1237, 3110, 6855, 11271], // in basis points (100 = 1%)
+      "BTC/USD 200 WMA": [68, 303, 1525, 3602, 8236, 11674],
     },
     balance: {
       "ETH/USD 2000 DMA": 2.5,
